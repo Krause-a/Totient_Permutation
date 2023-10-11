@@ -1,7 +1,3 @@
-#![allow(unused)]
-
-use std::time::{Instant, Duration};
-
 //Starting at 15:00
 
 /* ### Totient Perutation - Problem 70
@@ -23,25 +19,10 @@ fn main() {
         return;
     };
 
-    let mut tracked_value = usize::MAX;
-    let mut tracked_totient = usize::MAX;
     let mut smallest_ratio = f64::MAX;
 
-    let mut prime_factors : Vec<Vec<usize>> = Vec::new();
-
-    let mut time_instant = Instant::now();
-
     for i in 2..=value {
-        let tot;
-        if i % 100 == 0 {
-            println!("{}: Totient Time: {:?}", i, time_instant.elapsed());
-            tot = totient(i, &mut prime_factors);
-            time_instant = Instant::now();
-        }
-        else {
-            tot = totient(i, &mut prime_factors);
-        }
-        //println!("phi({}) = {}", i, tot);
+        let tot = totient(i);
 
         if check_permutation(i, tot) {
             let ratio = i as f64 / tot as f64;
@@ -54,64 +35,27 @@ fn main() {
 }
 
 //All positive numbers less than n that are co-prime to n
-fn totient(n:usize, factors:&mut Vec<Vec<usize>>) -> usize {
-    let mut count = 1;
+fn totient(mut n:usize) -> usize {
 
-    let n_factor = prime_factors(n);
+    let mut count = n;
+    let mut i = 2;
 
-    for nth_factor in factors.iter() {
-        if !has_overlap(&n_factor, nth_factor) {
-            count += 1;
+    while i * i <= n {
+        if n % i == 0 {
+            while n % i == 0 {
+                n /= i;
+            }
+            count -= count / i;
         }
+        i += 1;
     }
 
-    factors.push(n_factor);
+    if n > 1 {
+        count -= count / n;
+    }
 
     count
 }
-
-fn has_overlap(a:&Vec<usize>, b:&Vec<usize>) -> bool {
-    for x in a {
-        if b.contains(&x) {
-            return true;
-        }
-    }
-    false
-}
-
-fn prime_factors(mut n:usize) -> Vec<usize> {
-    let mut factors = Vec::new();
-    let mut divisor = 2;
-
-    while n > 1 {
-        while n % divisor == 0 {
-            if !factors.contains(&divisor) {
-                factors.push(divisor);
-            }
-            n /= divisor;
-        }
-        divisor += 1;
-    }
-
-    factors
-}
-
-fn check_co_prime(a:usize, b:usize) -> bool {
-    gcd(a, b) == 1
-}
-
-fn gcd(a:usize, b:usize) -> usize {
-    let mut a = a;
-    let mut b = b;
-
-    while b != 0 {
-        let temp = b;
-        b = a % b;
-        a = temp;
-    }
-    a
-}
-
 
 fn check_permutation(a:usize, b:usize) -> bool {
     count_digits(a) == count_digits(b)
