@@ -27,14 +27,22 @@ fn main() {
     let mut tracked_totient = usize::MAX;
     let mut smallest_ratio = f64::MAX;
 
-    let mut times : Vec<Duration> = Vec::new();
+    let mut prime_factors : Vec<Vec<usize>> = Vec::new();
+
+    let mut time_instant = Instant::now();
 
     for i in 2..=value {
-        let inst = Instant::now();
-        let tot = totient(i);
-        times.push(inst.elapsed());
-        //println!("{}", i);
-        //println!("Totient Time: {:?}", inst.elapsed());
+        let tot;
+        if i % 100 == 0 {
+            println!("{}: Totient Time: {:?}", i, time_instant.elapsed());
+            tot = totient(i, &mut prime_factors);
+            time_instant = Instant::now();
+        }
+        else {
+            tot = totient(i, &mut prime_factors);
+        }
+        //println!("phi({}) = {}", i, tot);
+
         if check_permutation(i, tot) {
             let ratio = i as f64 / tot as f64;
             if ratio < smallest_ratio {
@@ -42,35 +50,50 @@ fn main() {
                 println!("phi({}) = {} -> {}", i, tot, ratio);
             }
         }
-        //println!("Permutation Time: {:?}", inst.elapsed());
     }
-}
-
-fn check_permutation(a:usize, b:usize) -> bool {
-    count_digits(a) == count_digits(b)
-}
-
-fn count_digits(n:usize) -> [usize; 10] {
-    let mut counts = [0; 10];
-    let mut num = n;
-
-    while num > 0 {
-        counts[(num % 10)] += 1;
-        num /= 10;
-    }
-
-    counts
 }
 
 //All positive numbers less than n that are co-prime to n
-fn totient(n:usize) -> usize {
-    let mut count = 0;
-    for i in 1..n {
-        if check_co_prime(i, n) {
+fn totient(n:usize, factors:&mut Vec<Vec<usize>>) -> usize {
+    let mut count = 1;
+
+    let n_factor = prime_factors(n);
+
+    for nth_factor in factors.iter() {
+        if !has_overlap(&n_factor, nth_factor) {
             count += 1;
         }
     }
+
+    factors.push(n_factor);
+
     count
+}
+
+fn has_overlap(a:&Vec<usize>, b:&Vec<usize>) -> bool {
+    for x in a {
+        if b.contains(&x) {
+            return true;
+        }
+    }
+    false
+}
+
+fn prime_factors(mut n:usize) -> Vec<usize> {
+    let mut factors = Vec::new();
+    let mut divisor = 2;
+
+    while n > 1 {
+        while n % divisor == 0 {
+            if !factors.contains(&divisor) {
+                factors.push(divisor);
+            }
+            n /= divisor;
+        }
+        divisor += 1;
+    }
+
+    factors
 }
 
 fn check_co_prime(a:usize, b:usize) -> bool {
@@ -88,3 +111,22 @@ fn gcd(a:usize, b:usize) -> usize {
     }
     a
 }
+
+
+fn check_permutation(a:usize, b:usize) -> bool {
+    count_digits(a) == count_digits(b)
+}
+
+fn count_digits(n:usize) -> [usize; 10] {
+    let mut counts = [0; 10];
+    let mut num = n;
+
+    while num > 0 {
+        counts[(num % 10)] += 1;
+        num /= 10;
+    }
+
+    counts
+}
+
+
