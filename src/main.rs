@@ -1,25 +1,18 @@
-//Starting at 15:00
-
-/* ### Totient Perutation - Problem 70
-Euler's totient function, phi(n) [sometimes called the phi function], is used to determine the number of positive numbers less than or equal to n which are relatively prime to n. 
-For example, as 1, 2, 4, 5, 7, and 8, are all less than nine and relatively prime to nine, phi(9)=6.    The number 1 is considered to be relatively prime to every positive number, so phi(1)=1. 
-Interestingly, phi(87109)=79180, and it can be seen that 87109 is a permutation of 79180.
-Find the value of n, 1 lt n lt 10^7, for which phi(n) is a permutation of n and the ratio n over phi(n) produces a minimum.
-A minimum is the least of all n that does produce a permutation.
-*/
-
 fn main() {
     let args : Vec<_> = std::env::args().collect();
+
     if args.len() != 2 {
         eprintln!("Expected exactly one argument.");
         return;
     }
+
     let Ok(value) = args[1].parse::<usize>() else {
-        eprintln!("Could not parse argument as usize.");
+        eprintln!("Could not parse argument as unsigned integer.");
         return;
     };
 
     let mut smallest_ratio = f64::MAX;
+    let mut smallest_n = usize::MAX;
 
     for i in 2..=value {
         let tot = totient(i);
@@ -28,15 +21,18 @@ fn main() {
             let ratio = i as f64 / tot as f64;
             if ratio < smallest_ratio {
                 smallest_ratio = ratio;
-                println!("phi({}) = {} -> {}", i, tot, ratio);
+                smallest_n = i;
+                //println!("phi({}) = {} -> {}", i, tot, smallest_ratio);
             }
         }
     }
+
+    println!("phi({}) = {} -> {}", smallest_n, totient(smallest_n), smallest_ratio);
+    println!("n is {}", smallest_n);
 }
 
-//All positive numbers less than n that are co-prime to n
+//Euler's totient function. Also known as Euler's phi function.
 fn totient(mut n:usize) -> usize {
-
     let mut count = n;
     let mut i = 2;
 
@@ -72,5 +68,3 @@ fn count_digits(n:usize) -> [usize; 10] {
 
     counts
 }
-
-
